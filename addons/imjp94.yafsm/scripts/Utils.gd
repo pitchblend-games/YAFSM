@@ -1,4 +1,4 @@
-# Position Popup near to its target while within window, solution from ColorPickerButton source code(https://github.com/godotengine/godot/blob/6d8c14f849376905e1577f9fc3f9512bcffb1e3c/scene/gui/color_picker.cpp#L878)
+﻿## Position Popup near to its target while within window, solution from ColorPickerButton source code(https://github.com/godotengine/godot/blob/6d8c14f849376905e1577f9fc3f9512bcffb1e3c/scene/gui/color_picker.cpp#L878)
 static func popup_on_target(popup: Popup, target: Control):
 	popup.reset_size()
 	var usable_rect = Rect2(Vector2.ZERO, DisplayServer.window_get_size_with_decorations())
@@ -17,7 +17,7 @@ static func popup_on_target(popup: Popup, target: Control):
 		if usable_rect.encloses(cp_rect):
 			break
 	var main_window_position = DisplayServer.window_get_position()
-	var popup_position = main_window_position + Vector2i(cp_rect.position)  # make it work in multi-screen setups
+	var popup_position = main_window_position + Vector2i(cp_rect.position)  ## make it work in multi-screen setups
 	popup.set_position(popup_position)
 	popup.popup()
 
@@ -28,13 +28,13 @@ static func get_complementary_color(color):
 	return Color(r, g, b)
 
 class CohenSutherland:
-	const INSIDE = 0 # 0000
-	const LEFT = 1 # 0001
-	const RIGHT = 2 # 0010
-	const BOTTOM = 4 # 0100
-	const TOP = 8 # 1000
+	const INSIDE = 0 ## 0000
+	const LEFT = 1 ## 0001
+	const RIGHT = 2 ## 0010
+	const BOTTOM = 4 ## 0100
+	const TOP = 8 ## 1000
 
-	# Compute bit code for a point(x, y) using the clip
+	## Compute bit code for a point(x, y) using the clip
 	static func compute_code(x, y, x_min, y_min, x_max, y_max):
 		var code = INSIDE # initialised as being inside of clip window
 		if x < x_min: # to the left of clip window
@@ -49,9 +49,9 @@ class CohenSutherland:
 		
 		return code
 
-	# Cohen-Sutherland clipping algorithm clips a line from
-	# P0 = (x0, y0) to P1 = (x1, y1) against a rectangle with
-	# diagonal from start(x_min, y_min) to end(x_max, y_max)
+	## Cohen-Sutherland clipping algorithm clips a line from
+	## P0 = (x0, y0) to P1 = (x1, y1) against a rectangle with
+	## diagonal from start(x_min, y_min) to end(x_max, y_max)
 	static func line_intersect_rectangle(from, to, rect):
 		var x_min = rect.position.x
 		var y_min = rect.position.y

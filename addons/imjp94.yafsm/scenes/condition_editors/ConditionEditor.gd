@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends HBoxContainer
 
 @onready var name_edit = $Name

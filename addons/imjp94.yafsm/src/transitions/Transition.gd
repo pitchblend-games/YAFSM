@@ -1,16 +1,16 @@
-@tool
+﻿@tool
 extends Resource
 class_name Transition
 
 signal condition_added(condition)
 signal condition_removed(condition)
 
-@export var from: String  # Name of state transiting from
-@export var to: String  # Name of state transiting to
-@export var conditions: Dictionary:  # Conditions to transit successfuly, keyed by Condition.name
+@export var from: String  ## Name of state transiting from
+@export var to: String  ## Name of state transiting to
+@export var conditions: Dictionary:  ## Conditions to transit successfuly, keyed by Condition.name
 	set = set_conditions,
 	get = get_conditions
-@export var priority: = 0 # Higher the number, higher the priority
+@export var priority: = 0 ## Higher the number, higher the priority
 
 var _conditions
 
@@ -20,7 +20,7 @@ func _init(p_from="", p_to="", p_conditions={}):
 	to = p_to
 	_conditions = p_conditions
 
-# Attempt to transit with parameters given, return name of next state if succeeded else null
+## Attempt to transit with parameters given, return name of next state if succeeded else null
 func transit(params={}, local_params={}):
 	var can_transit = _conditions.size() > 0
 	for condition in _conditions.values():
@@ -40,7 +40,7 @@ func transit(params={}, local_params={}):
 		return to
 	return null
 
-# Add condition, return true if succeeded
+## Add condition, return true if succeeded
 func add_condition(condition):
 	if condition.name in _conditions:
 		return false
@@ -49,7 +49,7 @@ func add_condition(condition):
 	emit_signal("condition_added", condition)
 	return true
 
-# Remove condition by name of condition
+## Remove condition by name of condition
 func remove_condition(name):
 	var condition = _conditions.get(name)
 	if condition:
@@ -58,7 +58,7 @@ func remove_condition(name):
 		return true
 	return false
 
-# Change condition name, return true if succeeded
+## Change condition name, return true if succeeded
 func change_condition_name(from, to):
 	if not (from in _conditions) or to in _conditions:
 		return false
@@ -85,7 +85,7 @@ func equals(obj):
 
 	return from == obj.from and to == obj.to
 
-# Get duplicate of conditions dictionary
+## Get duplicate of conditions dictionary
 func get_conditions():
 	return _conditions.duplicate()
 

@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends "res://addons/imjp94.yafsm/scenes/flowchart/FlowChartLine.gd"
 const Transition = preload("../../src/transitions/Transition.gd")
 const ValueCondition = preload("../../src/conditions/ValueCondition.gd")
@@ -44,7 +44,7 @@ func _draw():
 			label_margin.rotation = deg_to_rad(0)
 			label_margin.position = Vector2((size.x - x_offset) / 2, y_offset)
 
-# Update overlay text
+## Update overlay text
 func update_label():
 	if transition:
 		var template_var = {"condition_name": "", "condition_comparation": "", "condition_value": null}

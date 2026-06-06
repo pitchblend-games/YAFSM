@@ -1,19 +1,19 @@
-@tool
+﻿@tool
 extends Resource
 class_name State
 
 signal name_changed(new_name)
 
-# Reserved state name for Entry/Exit
+## Reserved state name for Entry/Exit
 const ENTRY_STATE = "Entry"
 const EXIT_STATE = "Exit"
 
-const META_GRAPH_OFFSET = "graph_offset" # Meta key for graph_offset
+const META_GRAPH_OFFSET = "graph_offset" ## Meta key for graph_offset
 
-@export var name: = "":  # Name of state, unique within StateMachine
+@export var name: = "":  ## Name of state, unique within StateMachine
 	set = set_name
 
-var graph_offset:  # Position in FlowChart stored as meta, for editor only
+var graph_offset:  ## Position in FlowChart stored as meta, for editor only
 	set = set_graph_offset, 
 	get = get_graph_offset
 

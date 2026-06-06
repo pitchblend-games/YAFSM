@@ -1,11 +1,11 @@
-@tool
+﻿@tool
 extends Condition
 class_name ValueCondition
 
-signal comparation_changed(new_comparation) # Comparation hanged
-signal value_changed(new_value) # Value changed
+signal comparation_changed(new_comparation) ## Comparation hanged
+signal value_changed(new_value) ## Value changed
 
-# Enum to define how to compare value
+## Enum to define how to compare value
 enum Comparation {
 	EQUAL,
 	INEQUAL,
@@ -14,7 +14,7 @@ enum Comparation {
 	GREATER_OR_EQUAL,
 	LESSER_OR_EQUAL
 }
-# Comparation symbols arranged in order as enum Comparation
+## Comparation symbols arranged in order as enum Comparation
 const COMPARATION_SYMBOLS = [
 	"==",
 	"!=",
@@ -37,19 +37,19 @@ func set_comparation(c):
 		emit_signal("comparation_changed", c)
 		emit_signal("display_string_changed", display_string())
 
-# To be overrided by child class and emit value_changed signal
+## To be overrided by child class and emit value_changed signal
 func set_value(v):
 	pass
 
-# To be overrided by child class, as it is impossible to export(Variant)
+## To be overrided by child class, as it is impossible to export(Variant)
 func get_value():
 	pass
 
-# To be used in _to_string()
+## To be used in _to_string()
 func get_value_string():
 	return get_value()
 
-# Compare value against this condition, return true if succeeded
+## Compare value against this condition, return true if succeeded
 func compare(v):
 	if v == null:
 		return false
@@ -68,6 +68,6 @@ func compare(v):
 		Comparation.LESSER_OR_EQUAL:
 			return v <= get_value()
 
-# Return human readable display string, for example, "condition_name == True"
+## Return human readable display string, for example, "condition_name == True"
 func display_string():
 	return "%s %s %s" % [super.display_string(), COMPARATION_SYMBOLS[comparation], get_value_string()]

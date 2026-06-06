@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends Control
 
 const Utils = preload("res://addons/imjp94.yafsm/scripts/Utils.gd")
@@ -11,32 +11,32 @@ const FlowChartLayer = preload("FlowChartLayer.gd")
 const FlowChartGrid = preload("FlowChartGrid.gd")
 const Connection = FlowChartLayer.Connection
 
-signal connection(from, to, line) # When a connection established
-signal disconnection(from, to, line) # When a connection broken
-signal node_selected(node) # When a node selected
-signal node_deselected(node) # When a node deselected
-signal dragged(node, distance) # When a node dragged
+signal connection(from, to, line) ## When a connection established
+signal disconnection(from, to, line) ## When a connection broken
+signal node_selected(node) ## When a node selected
+signal node_deselected(node) ## When a node deselected
+signal dragged(node, distance) ## When a node dragged
 
-# Margin of content from edge of FlowChart
+## Margin of content from edge of FlowChart
 @export var scroll_margin: = 50
-# Offset between two line that interconnecting
+## Offset between two line that interconnecting
 @export var interconnection_offset: = 10
-# Snap amount
+## Snap amount
 @export var snap: = 20
-# Zoom amount
+## Zoom amount
 @export var zoom: = 1.0:
 	set = set_zoom
 @export var zoom_step: = 0.2
 @export var max_zoom: = 2.0
 @export var min_zoom: = 0.5
 
-var grid = FlowChartGrid.new() # Grid
-var content = Control.new() # Root node that hold anything drawn in the flowchart
+var grid = FlowChartGrid.new() ## Grid
+var content = Control.new() ## Root node that hold anything drawn in the flowchart
 var current_layer
 var h_scroll = HScrollBar.new()
 var v_scroll = VScrollBar.new()
 var top_bar = VBoxContainer.new()
-var gadget = HBoxContainer.new() # Root node of top overlay controls
+var gadget = HBoxContainer.new() ## Root node of top overlay controls
 var zoom_minus = Button.new()
 var zoom_reset = Button.new()
 var zoom_plus = Button.new()
@@ -486,13 +486,13 @@ func _gui_input(event):
 						_drag_start_pos = _drag_end_pos
 						queue_redraw()
 
-# Get selection box rect
+## Get selection box rect
 func get_selection_box_rect():
 	var pos = Vector2(min(_drag_start_pos.x, _drag_end_pos.x), min(_drag_start_pos.y, _drag_end_pos.y))
 	var size = (_drag_end_pos - _drag_start_pos).abs()
 	return Rect2(pos, size)
 
-# Get required scroll rect base on content
+## Get required scroll rect base on content
 func get_scroll_rect(layer=current_layer, force_scroll_margin=null):
 	var _scroll_margin = scroll_margin
 	if force_scroll_margin!=null:
@@ -516,12 +516,12 @@ func select_layer(layer):
 	current_layer = layer
 	_on_layer_selected(layer)
 
-# Add node
+## Add node
 func add_node(layer, node):
 	layer.add_node(node)
 	_on_node_added(layer, node)
 
-# Remove node
+## Remove node
 func remove_node(layer, node_name):
 	var node = layer.content_nodes.get_node_or_null(NodePath(node_name))
 	if node:
@@ -529,11 +529,11 @@ func remove_node(layer, node_name):
 		layer.remove_node(node)
 		_on_node_removed(layer, node_name)
 
-# Called after connection established
+## Called after connection established
 func _connect_node(line, from_pos, to_pos):
 	pass
 
-# Called after connection broken
+## Called after connection broken
 func _disconnect_node(line):
 	if line in _selection:
 		deselect(line)
@@ -543,15 +543,15 @@ func create_layer_instance():
 	layer.set_script(FlowChartLayer)
 	return layer
 
-# Return new line instance to use, called when connecting node
+## Return new line instance to use, called when connecting node
 func create_line_instance():
 	return FlowChartLineScene.instantiate()
 
-# Rename node
+## Rename node
 func rename_node(layer, old, new):
 	layer.rename_node(old, new)
 
-# Connect two nodes with a line
+## Connect two nodes with a line
 func connect_node(layer, from, to, line=null):
 	if not line:
 		line = create_line_instance()
@@ -560,7 +560,7 @@ func connect_node(layer, from, to, line=null):
 	_on_node_connected(layer, from, to)
 	emit_signal("connection", from, to, line)
 
-# Break a connection between two node
+## Break a connection between two node
 func disconnect_node(layer, from, to):
 	var line = layer.disconnect_node(from, to)
 	deselect(line) # Since line is selectable as well
@@ -568,11 +568,11 @@ func disconnect_node(layer, from, to):
 	emit_signal("disconnection", from, to)
 	return line
 
-# Clear all connections
+## Clear all connections
 func clear_connections(layer=current_layer):
 	layer.clear_connections()
 
-# Select a node(can be a line)
+## Select a node(can be a line)
 func select(node):
 	if node in _selection:
 		return
@@ -582,7 +582,7 @@ func select(node):
 	_drag_origins.append(node.position)
 	emit_signal("node_selected", node)
 
-# Deselect a node
+## Deselect a node
 func deselect(node):
 	_selection.erase(node)
 	if is_instance_valid(node):
@@ -590,7 +590,7 @@ func deselect(node):
 	_drag_origins.pop_back()
 	emit_signal("node_deselected", node)
 
-# Clear all selection
+## Clear all selection
 func clear_selection():
 	for node in _selection.duplicate(): # duplicate _selection array as deselect() edit array
 		if not node:
@@ -598,7 +598,7 @@ func clear_selection():
 		deselect(node)
 	_selection.clear()
 
-# Duplicate given nodes in editor
+## Duplicate given nodes in editor
 func duplicate_nodes(layer, nodes):
 	clear_selection()
 	var new_nodes = []
@@ -623,30 +623,30 @@ func duplicate_nodes(layer, nodes):
 						connect_node(layer, new_nodes[i].name, new_nodes[j].name)
 	_on_duplicated(layer, nodes, new_nodes)
 
-# Called after layer selected(current_layer changed)
+## Called after layer selected(current_layer changed)
 func _on_layer_selected(layer):
 	pass
 
 func _on_layer_deselected(layer):
 	pass
 
-# Called after a node added
+## Called after a node added
 func _on_node_added(layer, node):
 	pass
 
-# Called after a node removed
+## Called after a node removed
 func _on_node_removed(layer, node):
 	pass
 
-# Called when a node dragged
+## Called when a node dragged
 func _on_node_dragged(layer, node, dragged):
 	pass
 
-# Called when connection established between two nodes
+## Called when connection established between two nodes
 func _on_node_connected(layer, from, to):
 	pass
 
-# Called when connection broken
+## Called when connection broken
 func _on_node_disconnected(layer, from, to):
 	pass
 
@@ -668,14 +668,14 @@ func _request_connect_from(layer, from):
 func _request_connect_to(layer, to):
 	return true
 
-# Called when nodes duplicated
+## Called when nodes duplicated
 func _on_duplicated(layer, old_nodes, new_nodes):
 	pass
 
-# Convert position in FlowChart space to content(takes translation/scale of content into account)
+## Convert position in FlowChart space to content(takes translation/scale of content into account)
 func content_position(pos):
 	return (pos - content.position - content.pivot_offset * (Vector2.ONE - content.scale)) * 1.0/content.scale
 
-# Return array of dictionary of connection as such [{"from1": "to1"}, {"from2": "to2"}]
+## Return array of dictionary of connection as such [{"from1": "to1"}, {"from2": "to2"}]
 func get_connection_list(layer=current_layer):
 	return layer.get_connection_list()

@@ -1,15 +1,15 @@
-@tool
+﻿@tool
 @icon("../../assets/icons/state_machine_icon.png")
 extends State
 class_name StateMachine
 
-signal transition_added(transition) # Transition added
-signal transition_removed(to_state) # Transition removed
+signal transition_added(transition) ## Transition added
+signal transition_removed(to_state) ## Transition removed
 
-@export var states: Dictionary:  # States within this StateMachine, keyed by State.name
+@export var states: Dictionary:  ## States within this StateMachine, keyed by State.name
 	get = get_states,
 	set = set_states
-@export var transitions: Dictionary:  # Transitions from this state, keyed by Transition.to
+@export var transitions: Dictionary:  ## Transitions from this state, keyed by Transition.to
 	get = get_transitions,
 	set = set_transitions
 
@@ -22,7 +22,7 @@ func _init(p_name="", p_transitions={}, p_states={}):
 	_transitions = p_transitions
 	_states = p_states
 
-# Attempt to transit with global/local parameters, where local_params override params
+## Attempt to transit with global/local parameters, where local_params override params
 func transit(current_state, params={}, local_params={}):
 	var nested_states = current_state.split("/")
 	var is_nested = nested_states.size() > 1
@@ -71,8 +71,8 @@ func transit(current_state, params={}, local_params={}):
 				return next_state
 	return null
 
-# Get state from absolute path, for exmaple, "path/to/state" (root == empty string)
-# *It is impossible to get parent state machine with path like "../sibling", as StateMachine is not structed as a Tree
+## Get state from absolute path, for exmaple, "path/to/state" (root == empty string)
+## *It is impossible to get parent state machine with path like "../sibling", as StateMachine is not structed as a Tree
 func get_state(path):
 	var state
 	if path.is_empty():
@@ -87,7 +87,7 @@ func get_state(path):
 				state = _states[dir] # First level state
 	return state
 
-# Add state, state name must be unique within this StateMachine, return state added if succeed else return null
+## Add state, state name must be unique within this StateMachine, return state added if succeed else return null
 func add_state(state):
 	if not state:
 		return null
@@ -97,11 +97,11 @@ func add_state(state):
 	_states[state.name] = state
 	return state
 
-# Remove state by its name
+## Remove state by its name
 func remove_state(state):
 	return _states.erase(state)
 
-# Change existing state key in states(Dictionary), return true if success
+## Change existing state key in states(Dictionary), return true if success
 func change_state_name(from, to):
 	if not (from in _states) or to in _states:
 		return false
@@ -130,7 +130,7 @@ func change_state_name(from, to):
 						from_transitions[to] = transition
 	return true
 
-# Add transition, Transition.from must be equal to this state's name and Transition.to not added yet
+## Add transition, Transition.from must be equal to this state's name and Transition.to not added yet
 func add_transition(transition):
 	if transition.from == "" or transition.to == "":
 		push_warning("Transition missing from/to (%s/%s)" % [transition.from, transition.to])
@@ -146,7 +146,7 @@ func add_transition(transition):
 	from_transitions[transition.to] = transition
 	emit_signal("transition_added", transition)
 
-# Remove transition with Transition.to(name of state transiting to)
+## Remove transition with Transition.to(name of state transiting to)
 func remove_transition(from_state, to_state):
 	var from_transitions = _transitions.get(from_state)
 	if from_transitions:
@@ -168,14 +168,14 @@ func has_entry():
 func has_exit():
 	return State.EXIT_STATE in _states
 
-# Get duplicate of states dictionary
+## Get duplicate of states dictionary
 func get_states():
 	return _states.duplicate()
 
 func set_states(val):
 	_states = val
 
-# Get duplicate of transitions dictionary
+## Get duplicate of transitions dictionary
 func get_transitions():
 	return _transitions.duplicate()
 
@@ -191,7 +191,7 @@ static func join_path(base, dirs):
 			path = str(path, "/", dir)
 	return path
 
-# Validate state machine resource to identify and fix error
+## Validate state machine resource to identify and fix error
 static func validate(state_machine):
 	var validated = false
 	for from_key in state_machine.transitions.keys():

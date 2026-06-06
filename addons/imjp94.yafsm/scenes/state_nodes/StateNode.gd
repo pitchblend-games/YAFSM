@@ -1,9 +1,9 @@
-@tool
+﻿@tool
 extends "res://addons/imjp94.yafsm/scenes/flowchart/FlowChartNode.gd"
 const State = preload("../../src/states/State.gd")
 const StateMachine = preload("../../src/states/StateMachine.gd")
 
-signal name_edit_entered(new_name) # Emits when focused exit or Enter pressed
+signal name_edit_entered(new_name) ## Emits when focused exit or Enter pressed
 
 @onready var name_edit = $MarginContainer/NameEdit
 

@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends VBoxContainer
 const Utils = preload("../../scripts/Utils.gd")
 const ConditionEditor = preload("../condition_editors/ConditionEditor.tscn")
@@ -174,7 +174,7 @@ func set_transition(t):
 		transition = t
 		_on_transition_changed(t)
 
-# Free nodes cached in UndoRedo stack
+## Free nodes cached in UndoRedo stack
 func free_node_from_undo_redo():
 	for node in _to_free:
 		if is_instance_valid(node):

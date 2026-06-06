@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends Control
 const StackPlayer = preload("../StackPlayer.gd")
 const StackItem = preload("StackItem.tscn")
@@ -19,7 +19,7 @@ func _ready():
 	get_parent().popped.connect(_on_StackPlayer_popped)
 	sync_stack()
 
-# Override to handle custom object presentation
+## Override to handle custom object presentation
 func _on_set_label(label, obj):
 	label.text = obj
 

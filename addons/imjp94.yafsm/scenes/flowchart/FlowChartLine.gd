@@ -1,6 +1,6 @@
-@tool
+﻿@tool
 extends Container
-# Custom style normal, focus, arrow
+## Custom style normal, focus, arrow
 
 var selected: = false:
 	set = set_selected

@@ -1,9 +1,9 @@
-@tool
+﻿@tool
 extends Control
 const FlowChartNode = preload("res://addons/imjp94.yafsm/scenes/flowchart/FlowChartNode.gd")
 
-var content_lines = Control.new() # Node that hold all flowchart lines
-var content_nodes = Control.new() # Node that hold all flowchart nodes
+var content_lines = Control.new() ## Node that hold all flowchart lines
+var content_nodes = Control.new() ## Node that hold all flowchart nodes
 
 var _connections = {}
 
@@ -29,7 +29,7 @@ func show_content():
 	content_nodes.show()
 	content_lines.show()
 
-# Get required scroll rect base on content
+## Get required scroll rect base on content
 func get_scroll_rect(scroll_margin=0):
 	var rect = Rect2()
 	for child in content_nodes.get_children():
@@ -38,26 +38,26 @@ func get_scroll_rect(scroll_margin=0):
 		rect = rect.merge(child_rect)
 	return rect.grow(scroll_margin)
 
-# Add node
+## Add node
 func add_node(node):
 	content_nodes.add_child(node)
 
-# Remove node
+## Remove node
 func remove_node(node):
 	if node:
 		content_nodes.remove_child(node)
 
-# Called after connection established
+## Called after connection established
 func _connect_node(connection):
 	content_lines.add_child(connection.line)
 	connection.join()
 
-# Called after connection broken
+## Called after connection broken
 func _disconnect_node(connection):
 	content_lines.remove_child(connection.line)
 	return connection.line
 
-# Rename node
+## Rename node
 func rename_node(old, new):
 	for from in _connections.keys():
 		if from == old: # Connection from
@@ -72,7 +72,7 @@ func rename_node(old, new):
 					from_connection.erase(old)
 					from_connection[new] = value
 
-# Connect two nodes with a line
+## Connect two nodes with a line
 func connect_node(line, from, to, interconnection_offset=0):
 	if from == to:
 		return # Connect to self
@@ -97,7 +97,7 @@ func connect_node(line, from, to, interconnection_offset=0):
 			connection.join()
 			inv_connection.join()
 
-# Break a connection between two node
+## Break a connection between two node
 func disconnect_node(from, to):
 	var connections_from = _connections.get(from)
 	var connection = connections_from.get(to)
@@ -118,14 +118,14 @@ func disconnect_node(from, to):
 			inv_connection.join()
 	return connection.line
 
-# Clear all selection
+## Clear all selection
 func clear_connections():
 	for connections_from in _connections.values():
 		for connection in connections_from.values():
 			connection.line.queue_free()
 	_connections.clear()
 			
-# Return array of dictionary of connection as such [{"from1": "to1"}, {"from2": "to2"}]
+## Return array of dictionary of connection as such [{"from1": "to1"}, {"from2": "to2"}]
 func get_connection_list():
 	var connection_list = []
 	for connections_from in _connections.values():
@@ -134,24 +134,24 @@ func get_connection_list():
 	return connection_list
 
 class Connection:
-	var line # Control node that draw line
+	var line ## Control node that draw line
 	var from_node
 	var to_node
-	var offset = 0 # line's y offset to make space for two interconnecting lines
+	var offset = 0 ## line's y offset to make space for two interconnecting lines
 
 	func _init(p_line, p_from_node, p_to_node):
 		line = p_line
 		from_node = p_from_node
 		to_node = p_to_node
 
-	# Update line position
+	## Update line position
 	func join():
 		line.join(get_from_pos(), get_to_pos(), offset, [from_node.get_rect() if from_node else Rect2(), to_node.get_rect() if to_node else Rect2()])
 
-	# Return start position of line
+	## Return start position of line
 	func get_from_pos():
 		return from_node.position + from_node.size / 2
 
-	# Return destination position of line
+	## Return destination position of line
 	func get_to_pos():
 		return to_node.position + to_node.size / 2 if to_node else line.position

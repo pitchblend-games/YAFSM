@@ -6,8 +6,8 @@ func _ready():
     flowchart = get_parent().get_parent()
     queue_redraw()
 
-# Original Draw in FlowChart.gd inspired by:
-# https://github.com/godotengine/godot/blob/6019dab0b45e1291e556e6d9e01b625b5076cc3c/scene/gui/graph_edit.cpp#L442
+## Original Draw in FlowChart.gd inspired by:
+## https://github.com/godotengine/godot/blob/6019dab0b45e1291e556e6d9e01b625b5076cc3c/scene/gui/graph_edit.cpp#L442
 func _draw():
 
     self.position = flowchart.position

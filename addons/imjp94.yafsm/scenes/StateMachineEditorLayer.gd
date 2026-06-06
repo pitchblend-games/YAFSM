@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends "res://addons/imjp94.yafsm/scenes/flowchart/FlowChartLayer.gd"
 
 const Utils = preload("res://addons/imjp94.yafsm/scripts/Utils.gd")

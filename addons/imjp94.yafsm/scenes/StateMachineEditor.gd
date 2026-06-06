@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends "res://addons/imjp94.yafsm/scenes/flowchart/FlowChart.gd"
 
 const StateMachine = preload("../src/states/StateMachine.gd")
@@ -11,7 +11,7 @@ const StateNodeScript = preload("state_nodes/StateNode.gd")
 const StateMachineEditorLayer = preload("StateMachineEditorLayer.gd")
 const PathViewer = preload("PathViewer.gd")
 
-signal inspector_changed(property) # Inform plugin to refresh inspector
+signal inspector_changed(property) ## Inform plugin to refresh inspector
 signal debug_mode_changed(new_debug_mode)
 
 const ENTRY_STATE_MISSING_MSG = {
@@ -369,7 +369,7 @@ func open_layer(path):
 	select_layer(next_layer)
 	return next_layer
 
-# Recursively get next layer
+## Recursively get next layer
 func get_next_layer(dir, base_layer):
 	var next_layer = base_layer
 	var np = dir.next()
@@ -457,7 +457,7 @@ func create_line_instance():
 	line.theme.set_icon("arrow", "FlowChartLine", transition_arrow_icon)
 	return line
 
-# Request to save current editing StateMachine
+## Request to save current editing StateMachine
 func save_request():
 	if not can_save():
 		return
@@ -465,7 +465,7 @@ func save_request():
 	save_dialog.dialog_text = "Saving StateMachine to %s" % state_machine.resource_path
 	save_dialog.popup_centered()
 
-# Save current editing StateMachine
+## Save current editing StateMachine
 func save():
 	if not can_save():
 		return
@@ -473,7 +473,7 @@ func save():
 	unsaved_indicator.text = ""
 	ResourceSaver.save(state_machine, state_machine.resource_path)
 
-# Clear editor
+## Clear editor
 func clear_graph(layer):
 	clear_connections()
 	
@@ -485,7 +485,7 @@ func clear_graph(layer):
 	queue_redraw()
 	unsaved_indicator.text = "" # Clear graph is not action by user
 
-# Intialize editor with current editing StateMachine
+## Intialize editor with current editing StateMachine
 func draw_graph(layer):
 	for state_key in layer.state_machine.states.keys():
 		var state = layer.state_machine.states[state_key]
@@ -506,7 +506,7 @@ func draw_graph(layer):
 	queue_redraw()
 	unsaved_indicator.text = "" # Draw graph is not action by user
 
-# Add message to message_box(overlay text at bottom of editor)
+## Add message to message_box(overlay text at bottom of editor)
 func add_message(key, text):
 	var label = Label.new()
 	label.text = text
@@ -514,7 +514,7 @@ func add_message(key, text):
 	message_box.add_child(label)
 	return label
 
-# Remove message from message_box
+## Remove message from message_box
 func remove_message(key):
 	var control = _message_box_dict.get(key)
 	if control:
@@ -526,7 +526,7 @@ func remove_message(key):
 		return true
 	return false
 
-# Check if current editing StateMachine has entry, warns user if entry state missing
+## Check if current editing StateMachine has entry, warns user if entry state missing
 func check_has_entry():
 	if not current_layer.state_machine:
 		return
@@ -537,7 +537,7 @@ func check_has_entry():
 		if ENTRY_STATE_MISSING_MSG.key in  _message_box_dict:
 			remove_message(ENTRY_STATE_MISSING_MSG.key)
 
-# Check if current editing StateMachine is nested and has exit, warns user if exit state missing
+## Check if current editing StateMachine is nested and has exit, warns user if exit state missing
 func check_has_exit():
 	if not current_layer.state_machine:
 		return
@@ -726,7 +726,7 @@ func _on_remote_transited(from, to):
 			focused_layer = open_layer(to)
 		focused_layer.debug_transit_in(from, to)
 
-# Return if current editing StateMachine can be saved, ignore built-in resource
+## Return if current editing StateMachine can be saved, ignore built-in resource
 func can_save():
 	if not state_machine:
 		return false

@@ -1,4 +1,4 @@
-@tool
+﻿@tool
 extends EditorInspectorPlugin
 const Transition = preload("res://addons/imjp94.yafsm/src/transitions/Transition.gd")
 

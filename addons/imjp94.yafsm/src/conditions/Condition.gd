@@ -1,11 +1,11 @@
-@tool
+﻿@tool
 extends Resource
 class_name Condition
 
 signal name_changed(old, new)
 signal display_string_changed(new)
 
-@export var name: = "":  # Name of condition, unique to Transition
+@export var name: = "":  ## Name of condition, unique to Transition
 	set = set_name
 
 
