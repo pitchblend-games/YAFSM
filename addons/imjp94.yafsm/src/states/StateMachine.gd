@@ -12,6 +12,11 @@ signal transition_removed(to_state) ## Transition removed
 @export var transitions: Dictionary:  ## Transitions from this state, keyed by Transition.to
 	get = get_transitions,
 	set = set_transitions
+## When true on the root StateMachine, every tick evaluates transitions at every
+## ancestor StateMachine top-down (root first) and the highest-level match wins;
+## abandoned child SMs are auto-exited via StateMachinePlayer and Exit nodes are
+## no longer required in nested graphs. Has no effect on nested StateMachines.
+@export var allow_recursive_transitions: = false
 
 var _states
 var _transitions
@@ -22,8 +27,10 @@ func _init(p_name="", p_transitions={}, p_states={}):
 	_transitions = p_transitions
 	_states = p_states
 
-## Attempt to transit with global/local parameters, where local_params override params
-func transit(current_state, params={}, local_params={}):
+## Attempt to transit with global/local parameters, where local_params override params.
+## local_params_by_path (only used when allow_recursive_transitions is true on the root)
+## maps absolute SM path -> local params dict for that SM (i.e. StateMachinePlayer._local_parameters).
+func transit(current_state, params={}, local_params={}, local_params_by_path={}):
 	var nested_states = current_state.split("/")
 	var is_nested = nested_states.size() > 1
 	var end_state_machine = self
@@ -36,6 +43,30 @@ func transit(current_state, params={}, local_params={}):
 			end_state_machine = end_state_machine.states[state]
 		else:
 			end_state_machine = _states[state] # First level state
+
+	if allow_recursive_transitions and is_nested:
+		# Evaluate transitions at every ancestor StateMachine top-down; highest-level match wins.
+		# Handles Exit-less nested graphs naturally: a parent's transition from the current
+		# child SM fires directly, without waiting for the child to reach an Exit node.
+		var walk_sm = self
+		var walk_path = ""
+		for i in nested_states.size():
+			var from_name = nested_states[i]
+			var lp = {}
+			if walk_path in local_params_by_path:
+				lp = local_params_by_path[walk_path]
+			elif walk_path == base_path:
+				lp = local_params
+			var picked = _evaluate_level_transitions(walk_sm, from_name, walk_path, params, lp)
+			if picked != null:
+				return picked
+			if i < nested_states.size() - 1:
+				walk_path = join_path(walk_path, [from_name])
+				if walk_sm == self:
+					walk_sm = _states[from_name]
+				else:
+					walk_sm = walk_sm.states[from_name]
+		return null
 
 	# Nested StateMachine in Exit state
 	if is_nested:
@@ -57,7 +88,7 @@ func transit(current_state, params={}, local_params={}):
 	var from_transitions = end_state_machine.transitions.get(nested_states[nested_states.size()-1])
 	if from_transitions:
 		var from_transitions_array = from_transitions.values()
-		from_transitions_array.sort_custom(func(a, b): Transition.sort(a, b))
+		from_transitions_array.sort_custom(func(a, b): return Transition.sort(a, b))
 		
 		for transition in from_transitions_array:
 			var next_state = transition.transit(params, local_params)
@@ -69,6 +100,20 @@ func transit(current_state, params={}, local_params={}):
 					# Construct next state into absolute path
 					next_state = join_path(base_path, [next_state])
 				return next_state
+	return null
+
+func _evaluate_level_transitions(sm, from_name, at_path, params, local_params):
+	var from_transitions = sm.transitions.get(from_name)
+	if from_transitions == null:
+		return null
+	var from_transitions_array = from_transitions.values()
+	from_transitions_array.sort_custom(func(a, b): return Transition.sort(a, b))
+	for transition in from_transitions_array:
+		var next_state = transition.transit(params, local_params)
+		if next_state:
+			if "states" in sm.states[next_state]:
+				return join_path(at_path, [next_state, State.ENTRY_STATE])
+			return join_path(at_path, [next_state])
 	return null
 
 ## Get state from absolute path, for exmaple, "path/to/state" (root == empty string)

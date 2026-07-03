@@ -90,7 +90,7 @@ func _transit():
 
 	var from = get_current()
 	var local_params = _local_parameters.get(path_backward(from), {})
-	var next_state = state_machine.transit(get_current(), _parameters, local_params)
+	var next_state = state_machine.transit(get_current(), _parameters, local_params, _local_parameters)
 	if next_state:
 		if stack.has(next_state):
 			reset(stack.find(next_state))
@@ -106,6 +106,7 @@ func _transit():
 		_on_state_changed(from, to)
 
 func _on_state_changed(from, to):
+	_emit_synthetic_nested_exits(from, to)
 	match to:
 		State.ENTRY_STATE:
 			emit_signal("entered", "")
@@ -124,6 +125,32 @@ func _on_state_changed(from, to):
 		emit_signal("exited", state)
 
 	emit_signal("transited", from, to)
+
+# When a recursive-transitions transit jumps out of one or more nested StateMachines in
+# a single tick, synthesize "exited"/clear_param for every abandoned SM level so listeners
+# never miss an exit. Skips the leaf's own SM when `from` already ended in Exit (its exit
+# was emitted on the previous tick via the ends_with(EXIT_STATE) branch).
+func _emit_synthetic_nested_exits(from, to):
+	if from.is_empty() or from == to:
+		return
+	var from_parts: PackedStringArray = from.split("/")
+	var to_parts: PackedStringArray = to.split("/")
+	var common = 0
+	var max_common = mini(from_parts.size(), to_parts.size())
+	while common < max_common and from_parts[common] == to_parts[common]:
+		common += 1
+	var last_sm_idx = from_parts.size() - 2 # SMs in `from` are indices 0..size-2 (last is the leaf)
+	if from_parts[from_parts.size() - 1] == State.EXIT_STATE:
+		last_sm_idx -= 1 # leaf's SM already got its exit emission last tick
+	if last_sm_idx < common:
+		return
+	var abandoned_paths := []
+	for i in range(common, last_sm_idx + 1):
+		abandoned_paths.append("/".join(from_parts.slice(0, i + 1)))
+	abandoned_paths.reverse() # deepest first
+	for p in abandoned_paths:
+		clear_param(p, false)
+		emit_signal("exited", p)
 
 ## Called internally if process_mode is PHYSICS/IDLE to unlock update()
 func _update_start():

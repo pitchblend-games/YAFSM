@@ -541,7 +541,9 @@ func check_has_entry():
 func check_has_exit():
 	if not current_layer.state_machine:
 		return
-	if not path_viewer.get_cwd() == "root": # Nested state
+	# Root SM opted into recursive transitions -> nested Exit nodes are not required.
+	var root_recursive = state_machine != null and "allow_recursive_transitions" in state_machine and state_machine.allow_recursive_transitions
+	if not root_recursive and not path_viewer.get_cwd() == "root": # Nested state
 		if not current_layer.state_machine.has_exit():
 			if not (EXIT_STATE_MISSING_MSG.key in _message_box_dict):
 				add_message(EXIT_STATE_MISSING_MSG.key, EXIT_STATE_MISSING_MSG.text)
