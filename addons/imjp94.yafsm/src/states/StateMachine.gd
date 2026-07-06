@@ -29,15 +29,14 @@ func _init(p_name="", p_transitions={}, p_states={}):
 
 ## Attempt to transit with global/local parameters, where local_params override params.
 ## current_state_path is an absolute path to current state (i.e. Movement/Grounded/Run)
-func transit(current_state_path, params={}, local_params={}):
+func transit(current_state_path: String, params={}, local_params={}) -> String:
 	var nested_state_names = current_state_path.split("/")
-	var current_state_name = nested_state_names[nested_state_names.size()-1] # leaf name of current state (i.e. Run in Movement/Grounded/Run)
-	var is_nested : bool = nested_state_names.size() > 1
-	var end_state_machine : StateMachine = self
-	var base_path := ""
+	var current_state_name: String = nested_state_names[nested_state_names.size()-1] # leaf name of current state (i.e. Run in Movement/Grounded/Run)
+	var is_nested: bool = nested_state_names.size() > 1
+	var end_state_machine: StateMachine = self
+	var base_path: String = ""
 	for i in nested_state_names.size() - 1: # Ignore last one, to get its parent StateMachine
-		var nested_state_name = nested_state_names[i]
-		# Construct absolute base path
+		var nested_state_name: String = nested_state_names[i]
 		if allow_recursive_transitions:
 			var next_state = end_state_machine._evaluate_transitions(nested_state_name, base_path, params, local_params)
 			if next_state:
@@ -61,12 +60,12 @@ func transit(current_state_path, params={}, local_params={}):
 				next_state = join_path(end_state_machine_parent_path, [next_state])
 			return next_state
 	
-	end_state_machine._evaluate_transitions(current_state_name, base_path, params, local_params)
+	return end_state_machine._evaluate_transitions(current_state_name, base_path, params, local_params)
 
-func _evaluate_transitions(from_name, at_path, params, local_params):
+func _evaluate_transitions(from_name: String, at_path: String, params, local_params) -> String:
 	var from_transitions = transitions.get(from_name)
 	if from_transitions == null:
-		return null
+		return ""
 	var from_transitions_array = from_transitions.values()
 	from_transitions_array.sort_custom(func(a, b): return Transition.sort(a, b))
 	for transition in from_transitions_array:
@@ -75,7 +74,7 @@ func _evaluate_transitions(from_name, at_path, params, local_params):
 			if "states" in states[next_state]:
 				return join_path(at_path, [next_state, State.ENTRY_STATE])
 			return join_path(at_path, [next_state])
-	return null
+	return ""
 
 ## Get state from absolute path, for exmaple, "path/to/state" (root == empty string)
 ## *It is impossible to get parent state machine with path like "../sibling", as StateMachine is not structed as a Tree
