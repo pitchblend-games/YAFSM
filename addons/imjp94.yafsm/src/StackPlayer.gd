@@ -1,4 +1,4 @@
-﻿@tool
+@tool
 class_name StackPlayer extends Node
 
 signal pushed(to) ## When item pushed to stack

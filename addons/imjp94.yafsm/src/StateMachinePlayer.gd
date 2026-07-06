@@ -1,4 +1,4 @@
-﻿@tool
+@tool
 class_name StateMachinePlayer extends StackPlayer
 
 
@@ -89,8 +89,7 @@ func _transit():
 		return
 
 	var from = get_current()
-	var local_params = _local_parameters.get(path_backward(from), {})
-	var next_state = state_machine.transit(get_current(), _parameters, local_params, _local_parameters)
+	var next_state = state_machine.transit(get_current(), _parameters, _local_parameters)
 	if next_state:
 		if stack.has(next_state):
 			reset(stack.find(next_state))
