@@ -26,6 +26,7 @@ const ICON_VISIBILITY_HIDDEN_PATH := "res://addons/imjp94.yafsm/assets/editor_ic
 const ICON_TRANSITION_ARROW_PATH := "res://addons/imjp94.yafsm/assets/editor_icons/TransitionImmediateBig.svg"
 
 var _runtime_theme_ready := false
+var _pending_transits: Array[String] = []
 
 
 func bind_state_machine_player(smp: StateMachinePlayer) -> void:
@@ -44,6 +45,10 @@ func bind_state_machine_player(smp: StateMachinePlayer) -> void:
 
 	state_machine_player = smp
 	state_machine = smp.state_machine
+	# Polling the stack once per frame loses hops when the player transits more
+	# than once within one frame; "transited" fires per hop, in order.
+	if not smp.transited.is_connected(_on_smp_transited):
+		smp.transited.connect(_on_smp_transited)
 	debug_mode = true
 	show()
 
@@ -234,44 +239,17 @@ func _process(_delta: float) -> void:
 		set_debug_mode(false)
 		return
 
-	var stack = state_machine_player.stack
+	for to in _pending_transits:
+		set_current_state(to)
+	_pending_transits.clear()
 
-	if stack == null or stack.is_empty():
-		set_process(false)
-		set_debug_mode(false)
-		return
+	var live_state: String = state_machine_player.current
+	if live_state.is_empty():
+		return # Player not started yet
 
-	if stack.size() == 1:
-		set_current_state(state_machine_player.current)
-	else:
-		var stack_max_index = stack.size() - 1
-		var prev_index = stack.find(_current_state)
-		if prev_index == -1:
-			if _last_stack.size() < stack.size():
-				# Reproduce skipped transitions, matching the original editor debugger behavior.
-				var common_index = -1
-				for i in _last_stack.size():
-					if _last_stack[i] == stack[i]:
-						common_index = i
-						break
-				if common_index > -1:
-					var count_from_last_stack = _last_stack.size() - 1 - common_index - 1
-					var reversed_last_stack = _last_stack.duplicate()
-					reversed_last_stack.reverse()
-					for i in count_from_last_stack:
-						set_current_state(reversed_last_stack[i + 1])
-					for i in range(common_index + 1, stack.size()):
-						set_current_state(stack[i])
-				else:
-					set_current_state(stack.back())
-			else:
-				set_current_state(stack.back())
-		else:
-			var missing_count = stack_max_index - prev_index
-			for i in range(1, missing_count + 1):
-				set_current_state(stack[prev_index + i])
-
-	_last_stack = stack
+	if live_state != _current_state:
+		# Hops that emit no "transited" signal (start/restart) or happened before binding.
+		set_current_state(live_state)
 
 	var params = state_machine_player.get_params()
 	var local_params = _get_local_params_from_player()
@@ -280,6 +258,73 @@ func _process(_delta: float) -> void:
 	var layer = get_focused_layer(_current_state)
 	if layer:
 		layer.debug_update(_current_state, params, local_params)
+
+
+func _on_smp_transited(_from: String, to: String) -> void:
+	_pending_transits.append(to)
+
+
+## Read-only override: the editor version may call convert_to_state(), which
+## mutates the StateMachine resource the bound player is running.
+func _on_path_viewer_dir_pressed(dir, index) -> void:
+	var path = path_viewer.select_dir(dir)
+	select_layer(get_layer(path))
+	_last_index = index
+	_last_path = path
+
+
+## Replaces the editor version, which only switches layers on canonical
+## Entry/Exit steps and only selects a layer it just created. Runtime players
+## can jump between layers arbitrarily (recursive transitions, reset to a
+## stack state, several hops per frame), so always sync the visible layer
+## to the layer of "to".
+func _on_remote_transited(from, to) -> void:
+	if from:
+		var from_layer = get_focused_layer(from)
+		if from_layer:
+			from_layer.debug_transit_out(from, to)
+
+	if not to:
+		return
+
+	var target_layer := _ensure_layer_of_state(to)
+	if target_layer != current_layer:
+		_sync_path_viewer(target_layer)
+		select_layer(target_layer)
+	target_layer.debug_transit_in(from, to)
+
+
+## Return the layer displaying state_path, creating missing layers along the way.
+## Unlike open_layer()/create_layer(), independent of path_viewer/current_layer,
+## so it works for cross-layer jumps.
+func _ensure_layer_of_state(state_path: String) -> Control:
+	var parts: PackedStringArray = state_path.split("/")
+	var layer: Control = get_layer("root")
+	var machine = state_machine
+	for i in parts.size() - 1:
+		var part: String = parts[i]
+		var next_machine = machine.states.get(part)
+		if next_machine == null or not ("states" in next_machine):
+			break
+		var next_layer: Control = layer.get_node_or_null(NodePath(part))
+		if not next_layer:
+			next_layer = add_layer_to(layer)
+			next_layer.name = part
+			next_layer.state_machine = next_machine
+			draw_graph(next_layer)
+		layer = next_layer
+		machine = next_machine
+	return layer
+
+
+func _sync_path_viewer(layer: Control) -> void:
+	var layer_path := str(content.get_path_to(layer))
+	path_viewer.remove_dir_until(0)
+	var dirs: PackedStringArray = layer_path.split("/")
+	for i in range(1, dirs.size()):
+		path_viewer.add_dir(dirs[i])
+	_last_index = path_viewer.get_child_count() - 1
+	_last_path = layer_path
 
 
 func _get_local_params_from_player() -> Dictionary:
