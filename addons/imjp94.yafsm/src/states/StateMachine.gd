@@ -54,7 +54,7 @@ func transit(current_state_path: String, params={}, local_params={}) -> String:
 				end_state_machine_parent_path = join_path(end_state_machine_parent_path, [nested_state_names[i]])
 			var end_state_machine_parent = get_state(end_state_machine_parent_path)
 			var normalized_current_state = end_state_machine.name
-			var next_state = end_state_machine_parent.transit(normalized_current_state, params)
+			var next_state = end_state_machine_parent.transit(normalized_current_state, params, local_params)
 			if next_state:
 				# Construct next state into absolute path
 				next_state = join_path(end_state_machine_parent_path, [next_state])
@@ -66,10 +66,16 @@ func _evaluate_transitions(from_name: String, at_path: String, params, local_par
 	var from_transitions = transitions.get(from_name)
 	if from_transitions == null:
 		return ""
+	# local_params is the player's per-level store ({"path/to/sm": {param: value}});
+	# conditions at this level must only see THIS level's dict (set_param("A/B/x")
+	# lands in store["A/B"]["x"] — the flat lookup in Transition.transit would never
+	# find it, dead-locking every locally-conditioned edge, e.g. Traversal/Entry's
+	# Kind router).
+	var level_params = local_params.get(at_path, {}) if local_params is Dictionary else {}
 	var from_transitions_array = from_transitions.values()
 	from_transitions_array.sort_custom(func(a, b): return Transition.sort(a, b))
 	for transition in from_transitions_array:
-		var next_state = transition.transit(params, local_params)
+		var next_state = transition.transit(params, level_params)
 		if next_state:
 			if "states" in states[next_state]:
 				return join_path(at_path, [next_state, State.ENTRY_STATE])
